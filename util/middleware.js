@@ -9,6 +9,8 @@ const errorHandler = (error, req, res, next) => {
     return res.status(404).json({ error: error.message })
   if (error.name === 'TypeError')
     return res.status(400).json({ error: 'Malformatted request' })
+  if (error.name === 'PasswordError')
+    return res.status(400).json({ error: error.message })
   return res.status(500).json({ error: 'Something went wrong' })
 }
 
