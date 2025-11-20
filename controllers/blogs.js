@@ -24,12 +24,21 @@ router.post('/', async (req, res, next) => {
   }
 })
 
-router.delete('/:id', async (req, res) => {
-  const blog = await Blog.findByPk(req.params.id)
-  if (!blog)
-    throw { name: 'NotFound', message: 'Blog not found' }
-  await blog.destroy()
-  res.status(204).end()
+router.delete('/:id', async (req, res, next) => {
+  try {
+    const decodedToken = jwt.verify(req.token, SECRET)
+    if (!decodedToken.id)
+      throw { name: 'JsonWebTokenError', message: 'invalid token' }
+    const blog = await Blog.findByPk(req.params.id)
+    if (!blog)
+      throw { name: 'NotFound', message: 'Blog not found' }
+    if (blog.userId !== decodedToken.id)
+      throw { name: 'AuthorizationError', message: 'not authorized to delete this blog' }
+    await blog.destroy()
+    res.status(204).end()
+  } catch (error) {
+    next(error)
+  }
 })
 
 router.put('/:id', async (req, res) => {
