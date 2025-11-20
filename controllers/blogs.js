@@ -1,6 +1,8 @@
 const router = require('express').Router()
+const jwt = require('jsonwebtoken')
+const { SECRET } = require('../util/config')
 
-const { Blog } = require('../models')
+const { Blog, User } = require('../models')
 
 router.get('/', async (req, res) => {
   const blogs = await Blog.findAll()
@@ -9,7 +11,13 @@ router.get('/', async (req, res) => {
 
 router.post('/', async (req, res, next) => {
   try {
-    const blog = await Blog.create(req.body)
+    const decodedToken = jwt.verify(req.token, SECRET)
+    if (!decodedToken.id)
+      throw { name: 'JsonWebTokenError', message: 'invalid token' }
+    const user = await User.findByPk(decodedToken.id)
+    if (!user)
+      throw { name: 'NotFound', message: 'user not found' }
+    const blog = await Blog.create({ ...req.body, userId: user.id, author: user.name })
     res.json(blog)
   } catch (error) {
     next(error)
