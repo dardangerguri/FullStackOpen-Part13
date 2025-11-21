@@ -25,13 +25,18 @@ router.get('/:id', async (req, res, next) => {
       include: {
         as: 'readings',
         model: Blog,
-        attributes: ['id', 'title', 'url', 'likes', 'year'],
-        through: { attributes: [] }
+        attributes: ['id', 'title', 'url', 'likes', 'author', 'year'],
+        through: { as: 'readinglists', attributes: ['id', 'read'] }
       },
     })
     if (!user)
       throw { name: 'NotFound', message: 'User not found' }
-    res.json(user)
+    const userJSON = user.toJSON()
+    userJSON.readings = userJSON.readings.map(blog => ({
+      ...blog,
+      readinglists: [blog.readinglists]
+    }))
+    res.json(userJSON)
   } catch (error) {
     next(error)
   }
