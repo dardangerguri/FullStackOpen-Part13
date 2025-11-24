@@ -27,6 +27,11 @@ User.init({
     allowNull: false,
     field: 'password_hash'
   },
+  disabled: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: false,
+    allowNull: false
+  }
 }, {
   sequelize,
   underscored: true,
